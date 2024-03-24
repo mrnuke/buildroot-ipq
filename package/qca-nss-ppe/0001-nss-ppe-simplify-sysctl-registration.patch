@@ -1,0 +1,65 @@
+From 914ed004322a03f8aded4ed432b4ee5ba7a02709 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Sun, 24 Mar 2024 12:31:12 -0500
+Subject: [PATCH 1/6] nss-ppe: simplify sysctl registration
+
+The older style register_sysctl_table() has been removed since linux
+6.5, so switch to using register_sysctl(). The .child node of
+"struct ctl table" has also. Despite that, by registering the sysctl
+entry under "ppe_drv" instead pf "ppe/ppe_drv, only one invocation of
+sysctl_register() is required.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ drv/ppe_drv/ppe_drv.c | 28 +---------------------------
+ 1 file changed, 1 insertion(+), 27 deletions(-)
+
+diff --git a/drv/ppe_drv/ppe_drv.c b/drv/ppe_drv/ppe_drv.c
+index 16794d1..752d230 100755
+--- a/drv/ppe_drv/ppe_drv.c
++++ b/drv/ppe_drv/ppe_drv.c
+@@ -1338,32 +1338,6 @@ static struct ctl_table ppe_drv_sub[] = {
+ 	{}
+ };
+ 
+-/*
+- * ppe_drv_main
+- *	PPE DRV main directory
+- */
+-static struct ctl_table ppe_drv_main[] = {
+-	{
+-		.procname	=	"ppe_drv",
+-		.mode		=	0555,
+-		.child		=	ppe_drv_sub,
+-	},
+-	{}
+-};
+-
+-/*
+- * ppe_drv_root
+- *	PPE DRV root directory
+- */
+-static struct ctl_table ppe_drv_root[] = {
+-	{
+-		.procname	=	"ppe",
+-		.mode		=	0555,
+-		.child		=	ppe_drv_main,
+-	},
+-	{}
+-};
+-
+ /*
+  * ppe_drv_mht_port_from_fdb()
+  *	Get the port id corresponding to the destination
+@@ -1420,7 +1394,7 @@ static int __init ppe_drv_module_init(void)
+ 	/*
+ 	 * Register sysctl framework for PPE DRV
+ 	 */
+-	ppe_drv_gbl.ppe_drv_header = register_sysctl_table(ppe_drv_root);
++	ppe_drv_gbl.ppe_drv_header = register_sysctl("ppe_drv", ppe_drv_sub);
+ 	if (!ppe_drv_gbl.ppe_drv_header) {
+ 		ppe_drv_warn("sysctl table configuration failed");
+ 		unregister_netdevice_notifier(&nss_ppe_netdevice);
+-- 
+2.40.1
+
