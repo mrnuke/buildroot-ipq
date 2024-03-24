@@ -1,0 +1,106 @@
+From dccc493cebc2079f5e460808120fc37150b67990 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Sun, 24 Mar 2024 13:02:20 -0500
+Subject: [PATCH 3/6] nsa-ppe: do not use the "-Werror" compiler flag
+
+Turning warnings into errors with "-Werror" is very courageous. The
+code is lacking basic considerations to header inclusion, type safety,
+et cetera. This ends up triggerring hundreds of compiler warnings, and
+termianting the build.
+
+Until QCA fixes those, disable "-Werror".
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ Makefile               | 1 -
+ drv/ppe_drv/Makefile   | 1 -
+ drv/ppe_ds/Makefile    | 1 -
+ drv/ppe_qdisc/Makefile | 1 -
+ drv/ppe_rule/Makefile  | 1 -
+ drv/ppe_tun/Makefile   | 1 -
+ drv/ppe_vp/Makefile    | 1 -
+ 7 files changed, 7 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 1db3ad4..a71de6b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,6 @@
+ # Makefile for PPE test modules
+ 
+ ccflags-y := -I$(obj) -I$(obj)/..
+-ccflags-y += -Wall -Werror
+ 
+ export BUILD_ID = \"Build Id: $(shell date +'%m/%d/%y, %H:%M:%S')\"
+ ccflags-y += -DNSS_PPE_BUILD_ID="$(BUILD_ID)"
+diff --git a/drv/ppe_drv/Makefile b/drv/ppe_drv/Makefile
+index 37117fa..38265df 100755
+--- a/drv/ppe_drv/Makefile
++++ b/drv/ppe_drv/Makefile
+@@ -57,5 +57,4 @@ qca-nss-ppe-objs += tun/ppe_drv_tun_udf.o
+ qca-nss-ppe-objs += tun/ppe_drv_tun_v4.o
+ qca-nss-ppe-objs += tun/ppe_drv_tun_v6.o
+ 
+-ccflags-y += -Wall -Werror
+ ccflags-y += -DPPE_DRV_DEBUG_LEVEL=3
+\ No newline at end of file
+diff --git a/drv/ppe_ds/Makefile b/drv/ppe_ds/Makefile
+index 4106e69..47454ac 100644
+--- a/drv/ppe_ds/Makefile
++++ b/drv/ppe_ds/Makefile
+@@ -2,7 +2,6 @@
+ 
+ ccflags-y := -I$(obj)/exports -I$(obj)/..
+ ccflags-y += -DNSS_PPE_BUILD_ID="$(BUILD_ID)"
+-ccflags-y += -Wall -Werror
+ ccflags-y += -DPPE_DS_DEBUG_LEVEL=3
+ 
+ ifeq ($(SoC),$(filter $(SoC),ipq53xx))
+diff --git a/drv/ppe_qdisc/Makefile b/drv/ppe_qdisc/Makefile
+index 4ddaa92..9c8787f 100644
+--- a/drv/ppe_qdisc/Makefile
++++ b/drv/ppe_qdisc/Makefile
+@@ -15,4 +15,3 @@ qca-nss-ppe-qdisc-objs += ppe_fifo.o \
+ 			ppe_wrr.o
+ 
+ ccflags-y += -DPPE_QDISC_DEBUG_LEVEL=4
+-ccflags-y += -Wall -Werror
+diff --git a/drv/ppe_rule/Makefile b/drv/ppe_rule/Makefile
+index 41df4b1..bb85c9d 100755
+--- a/drv/ppe_rule/Makefile
++++ b/drv/ppe_rule/Makefile
+@@ -2,7 +2,6 @@
+ 
+ ccflags-y := -I$(obj)/../exports -I$(obj)/..
+ ccflags-y += -DPPE_DRV_BUILD_ID="$(BUILD_ID)"
+-ccflags-y += -Wall -Werror
+ 
+ ifeq ($(PPE_RULE_IPQ53XX), y)
+ ccflags-y += -DNSS_PPE_RULE_IPQ53XX
+diff --git a/drv/ppe_tun/Makefile b/drv/ppe_tun/Makefile
+index fc401bb..509b6f5 100644
+--- a/drv/ppe_tun/Makefile
++++ b/drv/ppe_tun/Makefile
+@@ -2,7 +2,6 @@
+ 
+ ccflags-y := -I$(obj)/../exports -I$(obj)/../ppe_drv/tun/ -I$(obj)/..
+ ccflags-y += -DPPE_BUILD_ID="$(BUILD_ID)"
+-ccflags-y += -Wall -Werror
+ ccflags-y += -DPPE_TUN_DEBUG_LEVEL=3
+ 
+ obj-m += qca-nss-ppe-tun.o
+diff --git a/drv/ppe_vp/Makefile b/drv/ppe_vp/Makefile
+index baa04c7..04ad67d 100644
+--- a/drv/ppe_vp/Makefile
++++ b/drv/ppe_vp/Makefile
+@@ -2,7 +2,6 @@
+ 
+ ccflags-y := -I$(obj)/../exports -I$(obj)/..
+ ccflags-y += -DNSS_PPE_BUILD_ID="$(BUILD_ID)"
+-ccflags-y += -Wall -Werror
+ ccflags-y += -DPPE_VP_DEBUG_LEVEL=2
+ 
+ obj-m += qca-nss-ppe-vp.o
+-- 
+2.40.1
+
