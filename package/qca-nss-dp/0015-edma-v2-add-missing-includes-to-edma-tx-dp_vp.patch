@@ -1,0 +1,49 @@
+From 751dc87dec7ed0f7d201e6ca706d5893580d5a8c Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Sat, 23 Mar 2024 19:39:57 -0500
+Subject: [PATCH 15/20] edma-v2: add missing #includes to edma-{tx,dp_vp}
+
+edma-tx.h makes use of several structs and functions declared in
+linux, but does not include the approrpriate headers. This leads to
+compilation errors with the "-Werror=implicit-function-declaration"
+compiler flag enabled.
+
+Also, edma_dp_vp.c makes use of function s defined in edma_dp_vp.h.
+Include the requisite headers.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ hal/dp_ops/edma_dp/edma_v2/edma_dp_vp.c | 1 +
+ hal/dp_ops/edma_dp/edma_v2/edma_tx.h    | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma_dp_vp.c b/hal/dp_ops/edma_dp/edma_v2/edma_dp_vp.c
+index 46696b5..c5d5e50 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_dp_vp.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_dp_vp.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "nss_dp_dev.h"
++#include "edma_dp_vp.h"
+ #include "edma_regs.h"
+ #include "edma_debug.h"
+ #include "edma.h"
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma_tx.h b/hal/dp_ops/edma_dp/edma_v2/edma_tx.h
+index a586685..2e636ce 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_tx.h
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_tx.h
+@@ -16,6 +16,10 @@
+  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  */
+ 
++#include <linux/netdevice.h>
++#include <linux/u64_stats_sync.h>
++#include <net/gso.h>
++
+ #ifndef __EDMA_TX_H__
+ #define __EDMA_TX_H__
+ 
+-- 
+2.40.1
+
