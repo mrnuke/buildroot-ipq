@@ -1,0 +1,53 @@
+From 681ced535118f2484c1fd4521cb538c4b44b79de Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Thu, 28 Mar 2024 21:33:31 -0500
+Subject: [PATCH 18/19] edma-v2: edma_rx: fix arguments to
+ ppe_drv_cc_process_skbuff()
+
+ppe_drv_cc_process_skbuff() takes a srtuct pointer as its first,
+argument, not a uint8_t. So instead of passing "cpu_code", store this
+code in a "struct ppe_drv_cc_metadata", and pass a pointer to the
+structure.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ hal/dp_ops/edma_dp/edma_v2/edma_rx.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma_rx.c b/hal/dp_ops/edma_dp/edma_v2/edma_rx.c
+index a51a86f..8bcd022 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_rx.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_rx.c
+@@ -345,9 +345,10 @@ static inline bool edma_rx_handle_sc_cc_packets(struct edma_gbl_ctx *egc,
+ {
+ 	uint16_t desc_index, next_desc_index;
+ 	uint32_t dst_port;
+-	uint8_t cpu_code, service_code;
++	uint8_t service_code;
+ 	struct edma_rxdesc_sec_desc *rxdesc_sec, *next_rxdesc_sec;
+ 	struct ppe_drv_sc_metadata sc_info = {0};
++	struct ppe_drv_cc_metadata cc;
+ 
+ 	/*
+ 	 * The primary descriptor has CPU code valid indication bit while
+@@ -360,7 +361,7 @@ static inline bool edma_rx_handle_sc_cc_packets(struct edma_gbl_ctx *egc,
+ 		/*
+ 		 * TODO: Invalidate the secondary descriptor before use.
+ 		 */
+-		cpu_code = EDMA_RXDESC_CPU_CODE_GET(rxdesc_sec);
++		cc.cpu_code = EDMA_RXDESC_CPU_CODE_GET(rxdesc_sec);
+ 
+ 		/*
+ 		 * Depending on the use-case, sometime PPE generate the same CPU
+@@ -371,7 +372,7 @@ static inline bool edma_rx_handle_sc_cc_packets(struct edma_gbl_ctx *egc,
+ 		next_rxdesc_sec = EDMA_RXDESC_SEC_DESC(rxdesc_ring, next_desc_index);
+ 		prefetch(next_rxdesc_sec);
+ 
+-		if (cpu_code && ppe_drv_cc_process_skbuff(cpu_code, skb)) {
++		if (cc.cpu_code && ppe_drv_cc_process_skbuff(&cc, skb)) {
+ 			return true;
+ 		}
+ 	}
+-- 
+2.40.1
+

@@ -1,0 +1,35 @@
+From 002fec61adf20aefa2b960ef761e5992e1063b6b Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Sat, 23 Mar 2024 19:39:57 -0500
+Subject: [PATCH 14/19] edma-v2: add missing #includes to edma-tx.h
+
+edma-tx.h makes use of several structs and functions declared in
+linux, but does not include the approrpriate headers. This leads to
+compilation errors with the "-Werror=implicit-function-declaration"
+compiler flag enabled.
+
+Include the requisite linux headers.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ hal/dp_ops/edma_dp/edma_v2/edma_tx.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma_tx.h b/hal/dp_ops/edma_dp/edma_v2/edma_tx.h
+index a586685..2e636ce 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_tx.h
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_tx.h
+@@ -16,6 +16,10 @@
+  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  */
+ 
++#include <linux/netdevice.h>
++#include <linux/u64_stats_sync.h>
++#include <net/gso.h>
++
+ #ifndef __EDMA_TX_H__
+ #define __EDMA_TX_H__
+ 
+-- 
+2.40.1
+

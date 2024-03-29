@@ -1,0 +1,43 @@
+From e8aecbcc550d441c7674558b06c39c103191102f Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Thu, 28 Mar 2024 21:14:09 -0500
+Subject: [PATCH 17/19] edma-v2: edma: include <linux/skbuff.h> before
+ <ppe_drv_sc.h>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The <ppe_drv_sc.h> header makes use of struct sk_buff *. However, it
+does not inlcude the correct headers. This cause the call to
+ppe_drv_sc_register_cb() to fail with an incompatible pointer error:
+
+  error: passing argument 2 of ‘ppe_drv_sc_register_cb’ from
+  incompatible pointer type [-Werror=incompatible-pointer-types]
+  1214 |         ppe_drv_sc_register_cb(PPE_DRV_SC_PTP, edma_rx_phy_tstamp_buf, NULL);
+       |                                                ^~~~~~~~~~~~~~~~~~~~~~
+
+This happens because the meaning of sk_buff in the PPE header is
+different than the meaning of sk_buff in edma_rx_phy_tstamp_buf().
+
+To unflux this, #include <linux/skbuff.h> before including
+<ppe_drv_sc.h> in order for the sk_buff definition to be available,
+and to resolve this compiler error.
+---
+ hal/dp_ops/edma_dp/edma_v2/edma.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma.c b/hal/dp_ops/edma_dp/edma_v2/edma.c
+index a3ab58f..dd33e25 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma.c
+@@ -22,6 +22,7 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
++#include <linux/skbuff.h>
+ #include <linux/irq.h>
+ #include <linux/reset.h>
+ #include <fal/fal_qm.h>
+-- 
+2.40.1
+

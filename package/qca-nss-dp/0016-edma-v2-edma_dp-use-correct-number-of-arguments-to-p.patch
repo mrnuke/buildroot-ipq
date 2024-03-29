@@ -1,0 +1,36 @@
+From 3044b7b8e2e8a1992b5caba91f37433a9e2e7891 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Thu, 28 Mar 2024 20:58:32 -0500
+Subject: [PATCH 16/19] edma-v2: edma_dp: use correct number of arguments to
+ ppe_drv_dp_init()
+
+Apparently ppe_drv_dp_init() takes three arguments, despite only two
+being passed. The third argument is named "mht_dev", and is incredibly
+well documented:
+
+    "MHT SWT device ports mapping flag"
+
+Because this acronym train sounds so sexy and carries a flag, select
+it as "true".
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ hal/dp_ops/edma_dp/edma_v2/edma_dp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma_dp.c b/hal/dp_ops/edma_dp/edma_v2/edma_dp.c
+index ee9a44a..0b4fd5a 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_dp.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_dp.c
+@@ -460,7 +460,7 @@ static int edma_dp_init(struct nss_dp_data_plane_ctx *dpc)
+ 		/*
+ 		* Initialize port allocated in PPE
+ 		*/
+-		if (ppe_drv_dp_init(iface, dp_dev->macid) != PPE_DRV_RET_SUCCESS) {
++		if (ppe_drv_dp_init(iface, dp_dev->macid, true) != PPE_DRV_RET_SUCCESS) {
+ 			netdev_err(netdev, "Error allocating PPE interface for dev(%p) dev-name %s\n",
+ 					netdev, netdev->name);
+ 			ppe_drv_iface_deref(iface);
+-- 
+2.40.1
+

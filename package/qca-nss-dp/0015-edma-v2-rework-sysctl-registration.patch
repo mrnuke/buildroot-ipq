@@ -1,0 +1,155 @@
+From 486b078b7921d26320086cff33bc1231eb885a6f Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Sat, 23 Mar 2024 20:08:14 -0500
+Subject: [PATCH 15/19] edma-v2: rework sysctl registration
+
+The older style register_sysctl_table() has been removed since linux
+6.5, so switch to using register_sysctl(). The .child node has also
+been removed, so several invocations of register_sysctl() are needed.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ hal/dp_ops/edma_dp/edma_v2/edma.c | 71 ++++++++++++++-----------------
+ hal/dp_ops/edma_dp/edma_v2/edma.h |  1 +
+ 2 files changed, 33 insertions(+), 39 deletions(-)
+
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma.c b/hal/dp_ops/edma_dp/edma_v2/edma.c
+index c6b3d54..a3ab58f 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma.c
+@@ -45,6 +45,8 @@ struct edma_gbl_ctx edma_gbl_ctx;
+ static char edma_txcmpl_irq_name[EDMA_MAX_TXCMPL_RINGS][EDMA_IRQ_NAME_SIZE];
+ static char edma_rxdesc_irq_name[EDMA_MAX_RXDESC_RINGS][EDMA_IRQ_NAME_SIZE];
+ 
++static void edma_nuke_sysctl(void);
++
+ #if defined(NSS_DP_POINT_OFFLOAD)
+ /*
+  * nss_dp_point_offload_info_get()
+@@ -193,10 +195,8 @@ void edma_cleanup(bool is_dp_override)
+ 		return;
+ 	}
+ 
+-	if (edma_gbl_ctx.ctl_table_hdr) {
+-		unregister_sysctl_table(edma_gbl_ctx.ctl_table_hdr);
+-		edma_gbl_ctx.ctl_table_hdr = NULL;
+-	}
++	if (edma_gbl_ctx.ctl_table_hdr)
++		edma_nuke_sysctl();
+ 
+ 	/*
+ 	 * TODO: Check with HW team about the state of in-flight
+@@ -1073,11 +1073,6 @@ static struct ctl_table edma_rx_flow_control_table[] = {
+  *	EDMA sub directory
+  */
+ static struct ctl_table edma_sub[] = {
+-	{
+-		.procname	=	"rx_fc",
+-		.mode		=	0555,
+-		.child		=	edma_rx_flow_control_table,
+-	},
+ 	{
+ 		.procname	=	"rps_num_cores",
+ 		.data		=	&edma_cfg_rx_rps_num_cores,
+@@ -1088,31 +1083,31 @@ static struct ctl_table edma_sub[] = {
+ 	{}
+ };
+ 
+-/*
+- * edma_main
+- *	EDMA main directory
+- */
+-static struct ctl_table edma_main[] = {
+-	{
+-		.procname	=	"edma",
+-		.mode		=	0555,
+-		.child		=	edma_sub,
+-	},
+-	{}
+-};
++static int edma_register_sysctl(void)
++{
++	edma_gbl_ctx.ctl_table_hdr = register_sysctl("net/edma", edma_sub);
++	if (!edma_gbl_ctx.ctl_table_hdr)
++		return -EINVAL;
+ 
+-/*
+- * edma_root
+- *	EDMA root directory
+- */
+-static struct ctl_table edma_root[] = {
+-	{
+-		.procname	=	"net",
+-		.mode		=	0555,
+-		.child		=	edma_main,
+-	},
+-	{}
+-};
++	edma_gbl_ctx.ctl_table_rx_fc = register_sysctl("net/edma/rx_fc",
++						       edma_rx_flow_control_table);
++	if (!edma_gbl_ctx.ctl_table_rx_fc)
++		return -EINVAL;
++
++	return 0;
++}
++
++static void edma_nuke_sysctl(void)
++{
++	if (edma_gbl_ctx.ctl_table_rx_fc)
++		unregister_sysctl_table(edma_gbl_ctx.ctl_table_rx_fc);
++
++	if (edma_gbl_ctx.ctl_table_hdr)
++		unregister_sysctl_table(edma_gbl_ctx.ctl_table_hdr);
++
++	edma_gbl_ctx.ctl_table_hdr = NULL;
++	edma_gbl_ctx.ctl_table_rx_fc = NULL;
++}
+ 
+ /*
+  * edma_init()
+@@ -1147,8 +1142,8 @@ int edma_init(void)
+ 		return -EINVAL;
+ 	}
+ 
+-	edma_gbl_ctx.ctl_table_hdr = register_sysctl_table(edma_root);
+-	if (!edma_gbl_ctx.ctl_table_hdr) {
++	if (edma_register_sysctl()) {
++		edma_nuke_sysctl();
+ 		edma_err("sysctl table configuration failed");
+ 		return -EINVAL;
+ 	}
+@@ -1161,8 +1156,7 @@ int edma_init(void)
+ 				EDMA_DEVICE_NODE_NAME);
+ 	if (!edma_gbl_ctx.reg_resource) {
+ 		edma_err("Unable to request EDMA register memory.\n");
+-		unregister_sysctl_table(edma_gbl_ctx.ctl_table_hdr);
+-		edma_gbl_ctx.ctl_table_hdr = NULL;
++		edma_nuke_sysctl();
+ 		return -EFAULT;
+ 	}
+ 
+@@ -1248,8 +1242,7 @@ edma_debugfs_init_fail:
+ edma_init_remap_fail:
+ 	release_mem_region((edma_gbl_ctx.reg_resource)->start,
+ 			resource_size(edma_gbl_ctx.reg_resource));
+-	unregister_sysctl_table(edma_gbl_ctx.ctl_table_hdr);
+-	edma_gbl_ctx.ctl_table_hdr = NULL;
++	edma_nuke_sysctl();
+ 	return ret;
+ }
+ 
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma.h b/hal/dp_ops/edma_dp/edma_v2/edma.h
+index bdd637a..f677c97 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma.h
++++ b/hal/dp_ops/edma_dp/edma_v2/edma.h
+@@ -205,6 +205,7 @@ struct edma_gbl_ctx {
+ 			/* NAPI flag */
+ 
+ 	struct ctl_table_header *ctl_table_hdr;
++	struct ctl_table_header *ctl_table_rx_fc;
+ 			/* sysctl table entry */
+ 
+ 	struct edma_rxfill_ring *rxfill_rings;
+-- 
+2.40.1
+

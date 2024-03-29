@@ -11,14 +11,15 @@ QCA_NSS_DP_LICENSE = Dual BSD/GPL
 QCA_NSS_DP_DEPENDENCIES = qca-ssdk
 
 QCA_NSS_DP_MODULE_MAKE_OPTS = \
-	SoC=ipq807x \
-	KBUILD_EXTRA_SYMBOLS="$(shell echo $(STAGING_DIR)/usr/include/qca-ssdk/Module.symvers)" \
-	EXTRA_CFLAGS="-I$(STAGING_DIR)/usr/include/qca-ssdk"
+	SoC=ipq95xx \
+	dp-ppe-ds=n \
+	KBUILD_EXTRA_SYMBOLS="$(shell echo $(STAGING_DIR)/usr/include/qca-ssdk/Module.symvers $(STAGING_DIR)/usr/include/qca-nss-ppe/Module.symvers)" \
+	EXTRA_CFLAGS="-I$(STAGING_DIR)/usr/include/qca-ssdk -I$(STAGING_DIR)/usr/include/qca-nss-ppe"
 
 $(eval $(kernel-module))
 
 define QCA_NSS_DP_FIX_HEADERS
-	ln -fs $(@D)/hal/soc_ops/ipq807x/nss_ipq807x.h $(@D)/exports/nss_dp_arch.h
+	ln -fs $(@D)/hal/soc_ops/ipq95xx/nss_ipq95xx.h $(@D)/exports/nss_dp_arch.h
 endef
 QCA_NSS_DP_PRE_BUILD_HOOKS += QCA_NSS_DP_FIX_HEADERS
 
