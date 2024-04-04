@@ -1,0 +1,32 @@
+From 9b37cc8f7cc372ebadf4d0252b8a26ade7d6b786 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Thu, 28 Mar 2024 23:37:08 -0500
+Subject: [PATCH 8/8] hsl_phy: add support for QUSGMII phy mode
+
+Add support for detecting the QUSGMII phy mode used by the QCQ8084
+PHYs. Internally, it is called QUXGMII, and maybe we shouldn't really
+be recycling QUSGMII.
+
+However, according to [1], that's what QCA thinks is acceptable, so
+pull it in the SSDK for now
+
+[1] https://lore.kernel.org/linux-arm-kernel/ZZ6LGiSde4hHM+6j@shell.armlinux.org.uk/T/
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ src/hsl/phy/hsl_phy.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/hsl/phy/hsl_phy.c b/src/hsl/phy/hsl_phy.c
+index 399a85b9..2f5c2905 100644
+--- a/src/hsl/phy/hsl_phy.c
++++ b/src/hsl/phy/hsl_phy.c
+@@ -1331,6 +1331,8 @@ hsl_port_phydev_interface_mode_status_get(a_uint32_t dev_id, a_uint32_t port_id,
+ 			break;
+ 		case PHY_INTERFACE_MODE_USXGMII:
+ 			*interface_mode_status = PORT_USXGMII;
++		case PHY_INTERFACE_MODE_QUSGMII:
++			*interface_mode_status = PORT_UQXGMII;
+ 			break;
+ 		case PHY_INTERFACE_MODE_10GKR:
+ 			*interface_mode_status = PORT_10GBASE_R;
