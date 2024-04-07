@@ -16,4 +16,9 @@ config BR2_PACKAGE_ATH11K_FIRMWARE_QCN9074
 	help
 	  Firmware files for QCN9074 PCI series.
 
+config BR2_PACKAGE_ATH12K_FIRMWARE_QCN9274
+	bool "QCN9274 firmware"
+	help
+	  Firmware files for QCN9274 PCI series.
+
 endif
