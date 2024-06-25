@@ -1,0 +1,281 @@
+From 6f4e546beb02f476fa58866a6e9b6235d6d7aa53 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Tue, 25 Jun 2024 13:23:08 -0500
+Subject: [PATCH 7/7] nss-ppe: include <linux/vmalloc.h> where needed
+ (linux-v6.10)
+
+The vzalloc() and vfree() functions were changed to macros in v6.10.
+Thus, the symbols are not found at link time causeing build failures.
+Even before, the function prototypes were not included, and the
+vmalloc.h header should have been included.
+
+How this was missed frustrates me, but does not surprise given the
+excelent state of the NSS_PPE codebase.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ drv/ppe_drv/ppe_drv_acl.c                      | 1 +
+ drv/ppe_drv/ppe_drv_flow.c                     | 1 +
+ drv/ppe_drv/ppe_drv_host.c                     | 1 +
+ drv/ppe_drv/ppe_drv_iface.c                    | 1 +
+ drv/ppe_drv/ppe_drv_l3_if.c                    | 1 +
+ drv/ppe_drv/ppe_drv_nexthop.c                  | 1 +
+ drv/ppe_drv/ppe_drv_policer.c                  | 1 +
+ drv/ppe_drv/ppe_drv_port.c                     | 1 +
+ drv/ppe_drv/ppe_drv_pppoe.c                    | 1 +
+ drv/ppe_drv/ppe_drv_pub_ip.c                   | 1 +
+ drv/ppe_drv/ppe_drv_sc.c                       | 1 +
+ drv/ppe_drv/ppe_drv_vsi.c                      | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_decap.c            | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_decap_map.c        | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_decap_xlate_rule.c | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_encap.c            | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_encap_xlate_rule.c | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_l3_if.c            | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_prgm_prsr.c        | 1 +
+ drv/ppe_drv/tun/ppe_drv_tun_udf.c              | 1 +
+ 20 files changed, 20 insertions(+)
+
+diff --git a/drv/ppe_drv/ppe_drv_acl.c b/drv/ppe_drv/ppe_drv_acl.c
+index 1661e35..791ae2f 100644
+--- a/drv/ppe_drv/ppe_drv_acl.c
++++ b/drv/ppe_drv/ppe_drv_acl.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_flow.c b/drv/ppe_drv/ppe_drv_flow.c
+index 3ddf278..510832c 100644
+--- a/drv/ppe_drv/ppe_drv_flow.c
++++ b/drv/ppe_drv/ppe_drv_flow.c
+@@ -21,6 +21,7 @@
+ #include <fal/fal_flow.h>
+ #include <fal/fal_qos.h>
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_host.c b/drv/ppe_drv/ppe_drv_host.c
+index 4566c4c..e102550 100644
+--- a/drv/ppe_drv/ppe_drv_host.c
++++ b/drv/ppe_drv/ppe_drv_host.c
+@@ -18,6 +18,7 @@
+ #include <linux/if_ether.h>
+ #include <fal/fal_ip.h>
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_iface.c b/drv/ppe_drv/ppe_drv_iface.c
+index 514c650..919c4d6 100644
+--- a/drv/ppe_drv/ppe_drv_iface.c
++++ b/drv/ppe_drv/ppe_drv_iface.c
+@@ -16,6 +16,7 @@
+ 
+ #include "ppe_drv.h"
+ #include "ppe_drv_stats.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_iface_free()
+diff --git a/drv/ppe_drv/ppe_drv_l3_if.c b/drv/ppe_drv/ppe_drv_l3_if.c
+index dcd3b76..a49c630 100644
+--- a/drv/ppe_drv/ppe_drv_l3_if.c
++++ b/drv/ppe_drv/ppe_drv_l3_if.c
+@@ -22,6 +22,7 @@
+ #include "ppe_drv.h"
+ 
+ #include <linux/etherdevice.h>
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_nexthop.c b/drv/ppe_drv/ppe_drv_nexthop.c
+index c6d8f68..3977e33 100644
+--- a/drv/ppe_drv/ppe_drv_nexthop.c
++++ b/drv/ppe_drv/ppe_drv_nexthop.c
+@@ -18,6 +18,7 @@
+ #include <linux/if_vlan.h>
+ #include <fal/fal_ip.h>
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_policer.c b/drv/ppe_drv/ppe_drv_policer.c
+index 2ebb7ae..32a8eff 100644
+--- a/drv/ppe_drv/ppe_drv_policer.c
++++ b/drv/ppe_drv/ppe_drv_policer.c
+@@ -26,6 +26,7 @@
+ #include <fal/fal_policer.h>
+ #include <ref/ref_vsi.h>
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_port.c b/drv/ppe_drv/ppe_drv_port.c
+index 4c5e8a4..5867014 100755
+--- a/drv/ppe_drv/ppe_drv_port.c
++++ b/drv/ppe_drv/ppe_drv_port.c
+@@ -29,6 +29,7 @@
+ #include <ref/ref_vsi.h>
+ #include "ppe_drv.h"
+ #include "tun/ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_pppoe.c b/drv/ppe_drv/ppe_drv_pppoe.c
+index ea84595..3fa633e 100644
+--- a/drv/ppe_drv/ppe_drv_pppoe.c
++++ b/drv/ppe_drv/ppe_drv_pppoe.c
+@@ -21,6 +21,7 @@
+ #include <fal/fal_api.h>
+ #include "ppe_drv.h"
+ #include "tun/ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_pub_ip.c b/drv/ppe_drv/ppe_drv_pub_ip.c
+index 2d95dc0..96fbb48 100644
+--- a/drv/ppe_drv/ppe_drv_pub_ip.c
++++ b/drv/ppe_drv/ppe_drv_pub_ip.c
+@@ -18,6 +18,7 @@
+ #include <fal/fal_ip.h>
+ #include <fal/fal_init.h>
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_sc.c b/drv/ppe_drv/ppe_drv_sc.c
+index 9e0ec7b..4039b54 100644
+--- a/drv/ppe_drv/ppe_drv_sc.c
++++ b/drv/ppe_drv/ppe_drv_sc.c
+@@ -17,6 +17,7 @@
+ #include <fal/fal_servcode.h>
+ #include <fal/fal_qm.h>
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/ppe_drv_vsi.c b/drv/ppe_drv/ppe_drv_vsi.c
+index 602e2a9..347fec6 100644
+--- a/drv/ppe_drv/ppe_drv_vsi.c
++++ b/drv/ppe_drv/ppe_drv_vsi.c
+@@ -20,6 +20,7 @@
+ #include <fal/fal_vsi.h>
+ #include <ref/ref_vsi.h>
+ #include "ppe_drv.h"
++#include <linux/vmalloc.h>
+ 
+ #if (PPE_DRV_DEBUG_LEVEL == 3)
+ /*
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_decap.c b/drv/ppe_drv/tun/ppe_drv_tun_decap.c
+index 643decc..87aee32 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_decap.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_decap.c
+@@ -24,6 +24,7 @@
+ #include <ppe_drv/ppe_drv.h>
+ #include "ppe_drv_tun.h"
+ #include <fal_vxlan.h>
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_decap_deconfigure
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_decap_map.c b/drv/ppe_drv/tun/ppe_drv_tun_decap_map.c
+index 261c064..516ed2e 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_decap_map.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_decap_map.c
+@@ -17,6 +17,7 @@
+ #include <fal_mapt.h>
+ #include <ppe_drv/ppe_drv.h>
+ #include "ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_decap_map_dump
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_decap_xlate_rule.c b/drv/ppe_drv/tun/ppe_drv_tun_decap_xlate_rule.c
+index 6a0a1f4..a1d0dbe 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_decap_xlate_rule.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_decap_xlate_rule.c
+@@ -17,6 +17,7 @@
+ #include "fal_mapt.h"
+ #include <ppe_drv/ppe_drv.h>
+ #include "ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_decap_xlate_rule_dump
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_encap.c b/drv/ppe_drv/tun/ppe_drv_tun_encap.c
+index 56ef4b7..654519b 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_encap.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_encap.c
+@@ -23,6 +23,7 @@
+ #include <fal_tunnel.h>
+ #include <ppe_drv/ppe_drv.h>
+ #include "ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_encap_hdr_ctrl_entry_free
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_encap_xlate_rule.c b/drv/ppe_drv/tun/ppe_drv_tun_encap_xlate_rule.c
+index 2b63a97..47dacad 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_encap_xlate_rule.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_encap_xlate_rule.c
+@@ -18,6 +18,7 @@
+ #include <linux/if_vlan.h>
+ #include <ppe_drv/ppe_drv.h>
+ #include "ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_encap_xlate_rule_dump
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_l3_if.c b/drv/ppe_drv/tun/ppe_drv_tun_l3_if.c
+index 6f95baa..4de01e2 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_l3_if.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_l3_if.c
+@@ -16,6 +16,7 @@
+ #include <fal_tunnel.h>
+ #include <ppe_drv/ppe_drv.h>
+ #include "ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_l3_if_dump
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_prgm_prsr.c b/drv/ppe_drv/tun/ppe_drv_tun_prgm_prsr.c
+index 2d77149..75385c7 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_prgm_prsr.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_prgm_prsr.c
+@@ -19,6 +19,7 @@
+ #include <ppe_drv/ppe_drv.h>
+ #include "ppe_drv_tun_prgm_prsr.h"
+ #include "ppe_drv_tun.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_prgm_prsr_free
+diff --git a/drv/ppe_drv/tun/ppe_drv_tun_udf.c b/drv/ppe_drv/tun/ppe_drv_tun_udf.c
+index 261f181..f514911 100644
+--- a/drv/ppe_drv/tun/ppe_drv_tun_udf.c
++++ b/drv/ppe_drv/tun/ppe_drv_tun_udf.c
+@@ -18,6 +18,7 @@
+ #include <fal_tunnel.h>
+ #include "ppe_drv_tun_udf.h"
+ #include "ppe_drv_tun_prgm_prsr.h"
++#include <linux/vmalloc.h>
+ 
+ /*
+  * ppe_drv_tun_udf_entry_fill
+-- 
+2.45.1
+
