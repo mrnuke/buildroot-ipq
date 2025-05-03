@@ -1,0 +1,93 @@
+From 1cce977a0218eb228f3fa5ea02608d70a32a01fb Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Sat, 3 May 2025 17:39:28 -0500
+Subject: [PATCH 14/14] nss-dp: support linux 6.11
+
+Since commit 78eb4ea25cd5 ("sysctl: treewide: constify the ctl_table
+argument of proc_handlers"), proc_handler takes in a const struct
+ctl_table pointer. Adjust the handlers to match the new prototoype.
+
+Since commit 0edb555a65d1e ("platform: Make platform_driver::remove()
+return void"), remove() cannot return an int. Change nss_dp_remove()
+to return void.
+---
+ hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c | 6 +++---
+ hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.h | 6 +++---
+ nss_dp_main.c                            | 4 +---
+ 3 files changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c
+index 3dec12a..d80e116 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c
+@@ -1414,7 +1414,7 @@ void edma_cfg_rx_napi_add(struct edma_gbl_ctx *egc, struct net_device *netdev)
+  * Similarly, whenever the free Rx ring descriptor count crosses the X-ON value,
+  * the ring level flow control will be disabled.
+  */
+-int edma_cfg_rx_fc_enable_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_fc_enable_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+@@ -1472,7 +1472,7 @@ int edma_cfg_rx_fc_enable_handler(struct ctl_table *table, int write,
+  * edma_cfg_rx_queue_tail_drop_handler()
+  *	API to enable/disable queue tail drop configuration
+  */
+-int edma_cfg_rx_queue_tail_drop_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_queue_tail_drop_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+@@ -1519,7 +1519,7 @@ int edma_cfg_rx_queue_tail_drop_handler(struct ctl_table *table, int write,
+  * edma_cfg_rx_rps()
+  *	API to configure RPS hash mapping for the given number of cores
+  */
+-int edma_cfg_rx_rps(struct ctl_table *table, int write,
++int edma_cfg_rx_rps(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+diff --git a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.h b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.h
+index 3354c53..4c59968 100644
+--- a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.h
++++ b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.h
+@@ -61,11 +61,11 @@ void edma_cfg_rx_napi_add(struct edma_gbl_ctx *egc, struct net_device *netdev);
+ void edma_cfg_rx_mapping(struct edma_gbl_ctx *egc);
+ void edma_cfg_rx_rings_enable(struct edma_gbl_ctx *egc);
+ void edma_cfg_rx_rings_disable(struct edma_gbl_ctx *egc);
+-int edma_cfg_rx_fc_enable_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_fc_enable_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos);
+ void edma_cfg_rx_page_mode_and_jumbo(struct edma_gbl_ctx *egc);
+-int edma_cfg_rx_queue_tail_drop_handler(struct ctl_table *table, int write,
++int edma_cfg_rx_queue_tail_drop_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos);
+-int edma_cfg_rx_rps(struct ctl_table *table, int write,
++int edma_cfg_rx_rps(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos);
+ #endif	/* __EDMA_CFG_RX_H__ */
+diff --git a/nss_dp_main.c b/nss_dp_main.c
+index 18071ba..aa60102 100644
+--- a/nss_dp_main.c
++++ b/nss_dp_main.c
+@@ -914,7 +914,7 @@ fail:
+  * Note: We only remove the physical ports here. Virtual
+  * port devices are removed explicitly by the VP module.
+  */
+-static int nss_dp_remove(struct platform_device *pdev)
++static void nss_dp_remove(struct platform_device *pdev)
+ {
+ 	uint32_t i;
+ 	struct nss_dp_dev *dp_priv;
+@@ -944,8 +944,6 @@ static int nss_dp_remove(struct platform_device *pdev)
+ 		free_netdev(dp_priv->netdev);
+ 		dp_global_ctx.nss_dp[i] = NULL;
+ 	}
+-
+-	return 0;
+ }
+ 
+ static struct of_device_id nss_dp_dt_ids[] = {
+-- 
+2.45.1
+
