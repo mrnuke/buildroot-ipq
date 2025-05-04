@@ -1,0 +1,70 @@
+From 501666ba412ea28e580563e11d8839601bfc83e3 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Sat, 3 May 2025 23:54:14 -0500
+Subject: [PATCH 8/8] nss-ppe: nss-dp: support linux 6.11
+
+Since commit 78eb4ea25cd5 ("sysctl: treewide: constify the ctl_table
+argument of proc_handlers"), proc_handler takes in a const struct
+ctl_table pointer. Adjust the handlers to match the new prototoype.
+
+Since commit 0edb555a65d1e ("platform: Make platform_driver::remove()
+return void"), remove() cannot return an int. Change nss_dp_remove()
+to return void.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ drv/ppe_drv/ppe_drv.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/drv/ppe_drv/ppe_drv.c b/drv/ppe_drv/ppe_drv.c
+index 242e328..120c851 100755
+--- a/drv/ppe_drv/ppe_drv.c
++++ b/drv/ppe_drv/ppe_drv.c
+@@ -935,7 +935,7 @@ fail:
+  * ppe_drv_remove()
+  *	remove the ppe driver
+  */
+-static int ppe_drv_remove(struct platform_device *pdev)
++static void ppe_drv_remove(struct platform_device *pdev)
+ {
+ 	struct ppe_drv *p = platform_get_drvdata(pdev);
+ 
+@@ -1059,8 +1059,6 @@ static int ppe_drv_remove(struct platform_device *pdev)
+ 
+ 	ppe_drv_flow_dump_exit();
+ 	ppe_drv_if_map_exit();
+-
+-	return 0;
+ }
+ 
+ /*
+@@ -1211,7 +1209,7 @@ static void ppe_drv_set_ppe_if_bm_to_port(void)
+  * ppe_drv_if_bm_to_offload_handler()
+  *	API to configure the interface bitmask where the offload is enabled
+  */
+-static int ppe_drv_if_bm_to_offload_handler(struct ctl_table *table, int write,
++static int ppe_drv_if_bm_to_offload_handler(const struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	int ret;
+@@ -1245,7 +1243,7 @@ static int ppe_drv_if_bm_to_offload_handler(struct ctl_table *table, int write,
+  * ppe_drv_disable_port_mtu_check_handler()
+  * 	Set disable port mtu config
+  */
+-static int ppe_drv_disable_port_mtu_check_handler(struct ctl_table *table,
++static int ppe_drv_disable_port_mtu_check_handler(const struct ctl_table *table,
+ 						int write, void __user *buffer,
+ 						size_t *lenp, loff_t *ppos)
+ {
+@@ -1268,7 +1266,7 @@ static int ppe_drv_disable_port_mtu_check_handler(struct ctl_table *table,
+  * ppe_drv_static_dbg_level_handler()
+  *	Set static debug level for ppe-driver.
+  */
+-static int ppe_drv_static_dbg_level_handler(struct ctl_table *table,
++static int ppe_drv_static_dbg_level_handler(const struct ctl_table *table,
+ 					int write, void __user *buffer,
+ 					size_t *lenp, loff_t *ppos)
+ {
+-- 
+2.45.1
+
