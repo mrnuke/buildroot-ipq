@@ -1,0 +1,20 @@
+config BR2_PACKAGE_ATH12K_FIRMWARE_TPLINK
+	bool "ath12k firmware for tplink"
+	help
+	  This package contains to firmware required for ath12k tplink devices
+	  to operate.
+
+if BR2_PACKAGE_ATH12K_FIRMWARE_TPLINK
+
+config BR2_PACKAGE_ATH12K_FIRMWARE_TPLINK_QCN9224
+	bool "QCN9224 firmware"
+	help
+	  TP-Link firmware files for QCN9224 PCI series.
+
+config BR2_PACKAGE_ATH12K_BDF_TPLINK_BE550
+	bool "Board file for TP-Link BE550"
+	help
+	  BDF files TP-Link BE550 wifi.
+
+endif
+
