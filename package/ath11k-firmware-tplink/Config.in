@@ -1,0 +1,14 @@
+config BR2_PACKAGE_ATH11K_FIRMWARE_TPLINK
+	bool "ath11k firmware for tplink"
+	help
+	  This package contains to firmware required for wifi-7 tplink devices
+	  with old-school wifi-6 radios on 2.4GHz bands.
+
+if BR2_PACKAGE_ATH11K_FIRMWARE_TPLINK
+
+config BR2_PACKAGE_ATH11K_FIRMWARE_TPLINK_IPQ9574
+	bool "IPQ9574 remoteproc firmware"
+	help
+	  TP-Link firmware files for IPQ9574 AHB series.
+
+endif
