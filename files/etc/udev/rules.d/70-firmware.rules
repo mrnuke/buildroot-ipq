@@ -1,0 +1,2 @@
+# No usermode helper for you! (prevent 60 sec timeout on FW loading)
+SUBSYSTEM=="firmware", ACTION=="add", ATTR{loading}="-1"
