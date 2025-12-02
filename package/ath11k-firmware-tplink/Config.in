@@ -11,4 +11,9 @@ config BR2_PACKAGE_ATH11K_FIRMWARE_TPLINK_IPQ9574
 	help
 	  TP-Link firmware files for IPQ9574 AHB series.
 
+config BR2_PACKAGE_ATH11K_BDF_TPLINK_BE550
+        bool "Board file for TP-Link BE550, 2.4 GHz"
+        help
+          BDF file for the 2.4 GHz wifi chip on TP-Link BE550.
+
 endif
