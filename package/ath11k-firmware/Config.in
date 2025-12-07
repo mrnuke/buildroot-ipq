@@ -11,6 +11,11 @@ config BR2_PACKAGE_ATH11K_FIRMWARE_IPQ8074
 	help
 	  Firmware files for IPQ807x SoC series.
 
+config BR2_PACKAGE_ATH11K_FIRMWARE_IPQ9574
+	bool "IPQ9574 firmware"
+	help
+	  Firmware files for IPQ95xx SoC series.
+
 config BR2_PACKAGE_ATH11K_FIRMWARE_QCN9074
 	bool "QCN9074 firmware"
 	help
